@@ -72,7 +72,8 @@ export async function createProjectInviteAction(input: unknown) {
   return { ok: true as const, inviteUrl: `${baseUrl}/invite/${token}`, expiresAt, projectName: project.name };
 }
 
-export async function acceptProjectInviteAction(token: string, _formData: FormData) {
+export async function acceptProjectInviteAction(token: string, formData: FormData) {
+  void formData;
   const supabase = await createSupabaseServerClient();
   if (!supabase) redirect(`/auth/login?next=${encodeURIComponent(`/invite/${token}`)}`);
   const { data: { user } } = await supabase.auth.getUser();

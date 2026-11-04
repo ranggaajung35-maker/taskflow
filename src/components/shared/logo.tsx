@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <span className="brand-lockup">

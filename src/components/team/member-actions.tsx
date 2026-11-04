@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Mail, MoreHorizontal, Shield, UserRound } from "lucide-react";
+import { Check, Mail, MoreHorizontal, Shield, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = { name: string; email: string; role: string };

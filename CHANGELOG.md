@@ -1,3 +1,10 @@
+# Changelog
+
+## Build compatibility fixes
+- Removed the obsolete workspace-wide invitation dialog; collaboration now uses project-scoped invitations only.
+- Updated the focus timer to complete sessions from its interval callback instead of setting state directly inside an effect.
+- Removed unused imports and marked the required server-action FormData argument as intentionally consumed.
+
 ## Project-scoped collaboration
 
 - Collaboration is isolated per project, GitHub-repository style; inviting a person to one project does not expose the owner's other projects.

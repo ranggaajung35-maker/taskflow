@@ -67,6 +67,10 @@ TaskFlow hanya membutuhkan Project URL dan Publishable Key di atas. **Tidak meme
 
 Jangan jalankan ulang `supabase/schema.sql` tanpa memeriksa struktur database terlebih dahulu. Cukup pastikan variabel `.env.local` masih benar. Jika `.env.local` berisi variabel lama seperti `SUPABASE_SECRET_KEY`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_IS_PRODUCTION`, `XENDIT_SECRET_KEY`, atau `XENDIT_WEBHOOK_TOKEN`, variabel tersebut tidak lagi digunakan oleh TaskFlow dan boleh dihapus. Pertahankan tiga variabel `NEXT_PUBLIC_*` yang diperlukan.
 
+## 3. Persiapan autentikasi sebelum publik
+
+Sebelum pengguna umum mendaftar, aktifkan **Confirm email** dan pasang custom SMTP di Supabase Authentication → SMTP Settings. SMTP bawaan Supabase ditujukan untuk pengujian, dibatasi dan hanya dapat mengirim ke alamat yang diizinkan. Jangan menonaktifkan verifikasi email sebagai jalan pintas untuk mengatasi rate limit. Set Site URL ke domain produksi dan tambahkan `https://DOMAIN-KAMU/auth/callback` ke Redirect URLs.
+
 ## 3. Jalankan pemeriksaan
 
 ```bash
@@ -171,3 +175,8 @@ Untuk menggunakan fitur ini:
 5. Buka **Kolaborasi proyek → Kinerja tim** atau kunjungi `/team/performance`.
 
 Filter 30/90 hari memfilter berdasarkan tanggal pembuatan tugas. Grafik tren menggunakan penyelesaian tugas yang ditugaskan selama 14 hari terakhir. Tugas tanpa penanggung jawab tidak masuk ke metrik individu dan ditampilkan sebagai jumlah tugas belum ditugaskan. Data yang tersedia di laporan mengikuti proyek yang dapat diakses akun tersebut; kolaborator tidak dapat melihat statistik proyek lain milik pemilik.
+
+
+## Refresh sesi Supabase (Next.js 16)
+
+`src/proxy.ts` menjalankan refresh cookie Supabase pada setiap request dinamis melalui `supabase.auth.getClaims()`. Jangan hapus file ini: tanpa Proxy, sesi SSR berisiko berakhir atau pengguna ter-logout setelah access token kedaluwarsa.

@@ -21,6 +21,13 @@ NEXT_PUBLIC_APP_URL=https://DOMAIN-KAMU
 
 Tidak ada kredensial gateway atau Supabase Secret Key yang diperlukan oleh aplikasi.
 
+## 3. Autentikasi email untuk pengguna publik (wajib)
+
+- Aktifkan kembali **Confirm email** sebelum aplikasi dibuka untuk umum. Jangan membiarkan akun dengan email yang belum diverifikasi dapat masuk, karena orang lain dapat mendaftarkan alamat email milik orang lain.
+- Konfigurasikan **custom SMTP** pada Supabase Authentication → SMTP Settings menggunakan penyedia email yang mendukung SMTP (misalnya Resend atau Brevo). SMTP bawaan Supabase hanya untuk pengujian dan dibatasi sekitar 2 email per jam serta penerima yang diizinkan; ini tidak cocok untuk pendaftaran publik.
+- Atur From address dan verifikasi domain pengirim (SPF/DKIM/DMARC) sesuai panduan penyedia email.
+- Pada Authentication → URL Configuration, set **Site URL** ke URL produksi TaskFlow dan masukkan callback berikut ke daftar Redirect URLs: `https://DOMAIN-KAMU/auth/callback`. Tambahkan `http://localhost:3000/auth/callback` hanya untuk pengembangan lokal.
+
 ## 3. Pemeriksaan sebelum publikasi
 
 Di komputer lokal, jalankan:
@@ -43,7 +50,7 @@ Lalu uji alur daftar, verifikasi email, login, logout, tambah/edit/hapus tugas, 
 5. Gunakan domain HTTPS Vercel sebagai `NEXT_PUBLIC_APP_URL`.
 6. Deploy.
 7. Tambahkan `https://DOMAIN-KAMU/auth/callback` ke Supabase Authentication → URL Configuration.
-8. Atur Site URL Supabase ke domain publik lalu redeploy.
+8. Atur Site URL Supabase ke domain publik, pastikan callback produksi terdaftar, dan redeploy.
 
 ## 5. Tabel billing lama (opsional)
 
@@ -60,3 +67,8 @@ Untuk kolaborasi, jalankan `supabase/migrations/20261105_project_scoped_collabor
 ## Kolaborasi per proyek (wajib sebelum dibuka ke publik)
 
 TaskFlow menggunakan model seperti repository GitHub: anggota hanya memperoleh akses ke proyek yang mengundangnya. Terapkan migration dengan urutan `schema.sql` → migration fitur lama yang memang digunakan → `20261105_project_scoped_collaboration.sql` → `20261105_project_scope_hardening.sql`. Jika migration project-scoped sebelumnya sudah diterapkan, jalankan migration hardening terakhir saja. Uji dengan dua akun: akun B diundang ke Proyek A milik akun A; akun B harus dapat membuka Proyek A dan tugasnya, tetapi tidak boleh menemukan Proyek B/C milik akun A melalui daftar proyek, pencarian, dashboard, kalender, analitik, atau URL langsung. RLS Supabase adalah lapisan penentu akses; filter tampilan saja tidak cukup.
+
+
+## Session refresh
+
+Jangan hapus `src/proxy.ts` dan `src/lib/supabase/proxy.ts`. Keduanya memperbarui cookie sesi Supabase sebelum halaman Server Component dirender. Tanpa Proxy, sesi dapat gagal diperbarui setelah access token kedaluwarsa.
