@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const titles: Record<string, string> = {
   "/dashboard": "Overview", "/tasks": "Tugas", "/projects": "Proyek", "/calendar": "Kalender",
-  "/analytics": "Analitik", "/team": "Anggota tim", "/settings": "Pengaturan", "/search": "Pencarian",
+  "/analytics": "Analitik", "/team": "Anggota tim", "/team/performance": "Kinerja tim", "/settings": "Pengaturan", "/search": "Pencarian",
 };
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {

@@ -54,4 +54,9 @@ Jangan commit `.env.local` atau kredensial apa pun ke GitHub.
 
 ## Undangan anggota (tanpa SMTP)
 
-Jalankan `supabase/migrations/20261105_workspace_invitations.sql` setelah schema utama. Atur `NEXT_PUBLIC_APP_URL` pada environment produksi ke URL publik TaskFlow (contoh `https://taskflow-domain.vercel.app`). Owner/admin dapat membuat tautan undangan dari halaman Anggota tim. Tautan berlaku 7 hari dan hanya dapat digunakan akun dengan email yang diundang.
+Untuk kolaborasi, jalankan `supabase/migrations/20261105_project_scoped_collaboration.sql` paling akhir setelah schema utama dan migration sebelumnya. Atur `NEXT_PUBLIC_APP_URL` pada environment produksi ke URL publik TaskFlow (contoh `https://taskflow-domain.vercel.app`). Owner proyek atau Project Manager membuat undangan dari detail proyek. Tautan berlaku 7 hari dan hanya dapat digunakan akun dengan email yang diundang. Penerima hanya akan melihat proyek yang dibagikan kepadanya; undangan workspace lama dinonaktifkan.
+
+
+## Kolaborasi per proyek (wajib sebelum dibuka ke publik)
+
+TaskFlow menggunakan model seperti repository GitHub: anggota hanya memperoleh akses ke proyek yang mengundangnya. Terapkan migration dengan urutan `schema.sql` → migration fitur lama yang memang digunakan → `20261105_project_scoped_collaboration.sql` → `20261105_project_scope_hardening.sql`. Jika migration project-scoped sebelumnya sudah diterapkan, jalankan migration hardening terakhir saja. Uji dengan dua akun: akun B diundang ke Proyek A milik akun A; akun B harus dapat membuka Proyek A dan tugasnya, tetapi tidak boleh menemukan Proyek B/C milik akun A melalui daftar proyek, pencarian, dashboard, kalender, analitik, atau URL langsung. RLS Supabase adalah lapisan penentu akses; filter tampilan saja tidak cukup.

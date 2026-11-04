@@ -31,7 +31,7 @@ export function MemberActions({ name, email, role }: Props) {
       <div role="menu" className="absolute right-0 top-10 z-50 w-52 overflow-hidden rounded-xl border border-white/10 bg-[#171c32] p-1.5 shadow-2xl">
         <div className="border-b border-white/[.07] px-3 py-2">
           <p className="truncate text-[10px] font-semibold text-slate-100">{name}</p>
-          <p className="truncate text-[9px] text-slate-500">{role === "owner" ? "Pemilik workspace" : role === "admin" ? "Admin workspace" : "Anggota workspace"}</p>
+          <p className="truncate text-[9px] text-slate-500">{role === "owner" ? "Pemilik proyek" : role === "manager" ? "Project Manager" : "Anggota proyek"}</p>
         </div>
         <button role="menuitem" type="button" onClick={() => void copy(name, "name")} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-[10px] text-slate-300 hover:bg-white/[.06]">
           {copied === "name" ? <Check size={13} className="text-emerald-300"/> : <UserRound size={13}/>} Salin nama

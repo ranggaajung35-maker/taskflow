@@ -9,9 +9,11 @@ TaskFlow adalah aplikasi workspace manajemen tugas dan proyek untuk individu mau
 - Dashboard produktivitas, aktivitas terbaru, dan Focus Timer.
 - Manajemen tugas: membuat tugas, status, prioritas, tenggat, serta pencarian/filter.
 - Manajemen proyek tanpa batas paket.
-- Kalender, analitik, dan daftar anggota workspace.
+- Kalender, analitik, dan direktori kolaborator per proyek.
+- Team Performance Analytics: laporan tugas per anggota, penyelesaian, tugas berjalan, keterlambatan, dan ketepatan waktu.
+- Penugasan tugas hanya kepada anggota proyek yang sama serta analitik kinerja proyek.
 - Pengaturan profil, zona waktu, dan preferensi aplikasi.
-- Row Level Security (RLS) untuk membatasi data berdasarkan workspace.
+- Kolaborasi terpisah per proyek dengan Row Level Security (RLS) di database; undangan ke satu proyek tidak membuka proyek lain.
 - Desain responsif, navigasi mobile, animasi, dan tema gelap.
 
 ## Teknologi
@@ -56,6 +58,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Redirect URL: `http://localhost:3000/auth/callback`
 8. Restart server (`Ctrl + C`, lalu `npm run dev`).
 9. Buka `/auth/signup` untuk membuat akun. Trigger database akan membuat profil dan workspace pribadi untuk pengguna baru.
+10. Jika database sebelumnya menggunakan versi lama, jalankan migration `supabase/migrations/20261105_team_performance.sql` terlebih dahulu bila belum pernah dijalankan.
+11. Jalankan migration `supabase/migrations/20261105_project_scoped_collaboration.sql` paling akhir. Migration ini mengubah kontrol akses menjadi per proyek, menambah tabel anggota/undangan proyek, dan menonaktifkan undangan workspace lama.
 
 TaskFlow hanya membutuhkan Project URL dan Publishable Key di atas. **Tidak memerlukan Supabase Secret Key, Xendit, Midtrans, API pembayaran, atau webhook.** Jangan menaruh secret key di variabel `NEXT_PUBLIC_*`.
 
@@ -93,9 +97,11 @@ src/
 │   │   ├── dashboard/
 │   │   ├── tasks/
 │   │   ├── projects/
+    │   │   └── [id]/  (ruang detail dan kolaborasi satu proyek)
 │   │   ├── calendar/
 │   │   ├── analytics/
 │   │   ├── team/
+│   │   │   └── performance/
 │   │   └── settings/
 │   ├── auth/
 │   ├── globals.css
@@ -104,9 +110,11 @@ src/
 │   ├── analytics/
 │   ├── dashboard/
 │   ├── projects/
+    │   │   └── [id]/  (ruang detail dan kolaborasi satu proyek)
 │   ├── shared/
 │   ├── shell/
-│   └── tasks/
+│   ├── tasks/
+│   └── team/
 └── lib/
     ├── actions/
     ├── data/
@@ -115,6 +123,9 @@ src/
     └── utils.ts
 supabase/
 ├── schema.sql
+├── migrations/
+│   ├── 20261105_workspace_invitations.sql (legacy)
+│   └── 20261105_team_performance.sql
 └── optional/
     └── remove_legacy_billing.sql
 ```
@@ -138,8 +149,25 @@ File `supabase/optional/remove_legacy_billing.sql` disediakan hanya untuk member
 TaskFlow tidak mengisi akun baru dengan tugas, proyek, anggota, aktivitas, atau grafik contoh. Semua daftar dan metrik dimulai dari data workspace yang benar-benar tersimpan di Supabase.
 
 
-## Pencarian global dan undangan anggota
+## Kolaborasi terpisah per proyek
 
-Pencarian di topbar mengarahkan ke `/search` dan mencari tugas, proyek, serta anggota pada workspace aktif. Menu titik tiga pada daftar anggota menyediakan aksi menyalin nama/email.
+Setiap akun mempunyai workspace pribadi. Model kolaborasi TaskFlow mengikuti konsep repository GitHub: **akses diberikan per proyek, bukan per workspace**. Proyek yang dibuat di workspace pribadi hanya terlihat oleh pemiliknya, kecuali proyek tertentu dibagikan secara eksplisit. Buka kartu proyek untuk masuk ke ruang proyek; dari halaman detail proyek, Owner atau Project Manager dapat membuat tautan undangan yang hanya berlaku untuk proyek tersebut. Penerima harus masuk dengan email yang diundang. Undangan berlaku 7 hari dan tidak memerlukan SMTP.
 
-Undangan anggota memakai tautan sekali pakai yang kedaluwarsa dalam 7 hari sehingga tidak memerlukan SMTP. Sebelum fitur ini digunakan, jalankan `supabase/migrations/20261105_workspace_invitations.sql` di Supabase SQL Editor. Tautan hanya dapat diterima oleh pengguna yang sudah login/daftar dengan email yang diundang. Tetapkan `NEXT_PUBLIC_APP_URL` ke URL publik di Vercel agar tautan undangan tidak mengarah ke localhost. Owner dapat mengundang admin/member; admin hanya dapat mengundang member.
+Anggota proyek hanya melihat detail proyek tersebut, daftar tugas, komentar, aktivitas, dan daftar anggota yang berada di proyek yang sama. Mereka tidak ditambahkan ke `workspace_members` milik pemilik dan tidak dapat melihat proyek pemilik lainnya. Jika pemilik memiliki Proyek A, B, dan C lalu mengundang teman hanya ke Proyek A, teman tersebut hanya akan melihat Proyek A (ditambah proyek pribadi miliknya sendiri). Tugas baru wajib berada di dalam proyek dan penanggung jawab harus menjadi anggota proyek yang sama. Halaman Kinerja Tim memiliki filter proyek agar laporan antarproyek tidak tercampur. Owner proyek dan Project Manager dapat melihat kinerja tim pada proyek yang mereka kelola; Member hanya melihat tugas dan metrik miliknya sendiri. Daftar proyek juga dipisahkan menjadi **Proyek milik saya** dan **Dibagikan kepada saya**.
+
+Urutan migration: jalankan `supabase/schema.sql` terlebih dahulu, lalu migration lama yang memang sudah digunakan (`20261105_workspace_invitations.sql` bila pernah dipakai), `20261105_team_performance.sql`, kemudian `20261105_project_scoped_collaboration.sql`. Terakhir jalankan `20261105_project_scope_hardening.sql` untuk instalasi yang sudah menerapkan project-scope sebelumnya; migration ini menghapus izin tulis langsung ke tabel anggota dan menonaktifkan sisa undangan workspace lama. Undangan workspace terdahulu tidak otomatis memberi akses proyek; buat undangan ulang dari halaman detail setiap proyek. Pastikan `NEXT_PUBLIC_APP_URL` di produksi berisi URL HTTPS publik TaskFlow agar tautan tidak mengarah ke localhost.
+
+
+## Team Performance Analytics
+
+Halaman `/team/performance` menampilkan kinerja berdasarkan tugas yang benar-benar ditugaskan dari proyek yang dapat diakses akun saat ini. Owner proyek dapat melihat seluruh anggota pada proyek miliknya; Project Manager dan Member hanya dapat melihat data proyek yang secara eksplisit dibagikan kepada mereka. Metrik mencakup jumlah tugas ditugaskan, selesai, berjalan, terlambat, persentase penyelesaian, dan ketepatan waktu. Ketepatan waktu hanya dihitung untuk tugas selesai yang memiliki tenggat dan `completed_at`.
+
+Untuk menggunakan fitur ini:
+
+1. Jalankan `supabase/migrations/20261105_team_performance.sql` jika belum pernah dijalankan.
+2. Jalankan `supabase/migrations/20261105_project_scoped_collaboration.sql` paling akhir agar penugasan divalidasi berdasarkan keanggotaan proyek.
+3. Buka halaman detail proyek dan buat tugas di proyek tersebut.
+4. Pilih **Penanggung jawab** dari anggota proyek yang sama.
+5. Buka **Kolaborasi proyek → Kinerja tim** atau kunjungi `/team/performance`.
+
+Filter 30/90 hari memfilter berdasarkan tanggal pembuatan tugas. Grafik tren menggunakan penyelesaian tugas yang ditugaskan selama 14 hari terakhir. Tugas tanpa penanggung jawab tidak masuk ke metrik individu dan ditampilkan sebagai jumlah tugas belum ditugaskan. Data yang tersedia di laporan mengikuti proyek yang dapat diakses akun tersebut; kolaborator tidak dapat melihat statistik proyek lain milik pemilik.

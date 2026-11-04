@@ -5,6 +5,7 @@ export type Task = {
   id: string;
   workspace_id?: string;
   project_id?: string | null;
+  assignee_id?: string | null;
   title: string;
   description?: string | null;
   status: TaskStatus;
@@ -19,6 +20,7 @@ export type Task = {
 export type Project = {
   id: string;
   workspace_id?: string;
+  created_by?: string;
   name: string;
   description?: string | null;
   color: string;
@@ -28,12 +30,25 @@ export type Project = {
   completed_count?: number;
 };
 
-export type WorkspaceMember = {
+export type ProjectMember = {
   id: string;
+  user_id: string;
   full_name: string;
   email: string;
-  role: "owner" | "admin" | "member";
+  role: "owner" | "manager" | "member";
   avatar_url?: string | null;
+  project_ids: string[];
+  project_names: string[];
+  project_roles?: Record<string, "owner" | "manager" | "member">;
+};
+
+/** Kept as an alias for existing components that consume member lists. */
+export type WorkspaceMember = ProjectMember;
+
+export type ProjectTeam = {
+  project: Project;
+  members: ProjectMember[];
+  canManage: boolean;
 };
 
 export type Activity = {
@@ -41,4 +56,5 @@ export type Activity = {
   description: string;
   created_at: string;
   actor_name?: string;
+  project_id?: string | null;
 };

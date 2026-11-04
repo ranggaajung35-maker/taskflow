@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   return <div className="app-content">
     {context.demo && <DemoBanner/>}
-    <PageHeading eyebrow="RINGKASAN WORKSPACE" title={`${greeting()}, ${name.split(" ")[0]} 👋`} description="Berikut gambaran pekerjaan dan progres workspace kamu hari ini." action={<Link href="/tasks" className="btn-primary btn-small"><Plus size={14}/> Buat tugas</Link>}/>
+    <PageHeading eyebrow="RINGKASAN PROYEK" title={`${greeting()}, ${name.split(" ")[0]} 👋`} description="Berikut gambaran pekerjaan dari proyek milikmu dan proyek yang dibagikan kepadamu." action={<Link href="/tasks" className="btn-primary btn-small"><Plus size={14}/> Buat tugas</Link>}/>
     <section className="stat-grid">
       <StatCard label="Total tugas" value={tasks.length} foot="Semua pekerjaan terdaftar" icon={CheckCircle2} tone="purple"/>
       <StatCard label="Sedang dikerjakan" value={inProgress} foot="Tugas dalam proses" icon={Clock3} tone="blue"/>
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
 
     <section className="dashboard-grid">
       <div className="panel"><div className="panel-header"><div><h2 className="section-title">Aktivitas produktivitas</h2><p className="section-subtitle">Perbandingan tugas selesai dan tugas dibuat</p></div><span className="text-[8px] text-slate-500 border border-white/10 rounded-md px-2 py-1">7 hari terakhir</span></div><CompletionChart data={weeklyActivity}/></div>
-      <div className="panel"><div className="panel-header"><div><h2 className="section-title">Aktivitas terbaru</h2><p className="section-subtitle">Update terbaru di workspace</p></div><Activity size={15} className="text-violet-300"/></div><div className="panel-body"><ActivityFeed activities={activities}/><div className="mt-5 pt-5 border-t border-white/[.06]"><FocusTimer/></div></div></div>
+      <div className="panel"><div className="panel-header"><div><h2 className="section-title">Aktivitas terbaru</h2><p className="section-subtitle">Update dari proyek yang dapat kamu akses</p></div><Activity size={15} className="text-violet-300"/></div><div className="panel-body"><ActivityFeed activities={activities}/><div className="mt-5 pt-5 border-t border-white/[.06]"><FocusTimer/></div></div></div>
     </section>
 
     <section className="dashboard-grid mt-4">

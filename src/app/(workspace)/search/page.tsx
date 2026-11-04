@@ -12,7 +12,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const matchedMembers = needle ? members.filter((item) => `${item.full_name} ${item.email} ${item.role}`.toLowerCase().includes(needle)) : [];
   const total = matchedTasks.length + matchedProjects.length + matchedMembers.length;
   return <div className="app-content">
-    <PageHeading eyebrow="WORKSPACE / PENCARIAN" title="Pencarian global" description="Cari tugas, proyek, dan anggota di workspace kamu."/>
+    <PageHeading eyebrow="PROYEK / PENCARIAN" title="Pencarian global" description="Cari tugas, proyek, dan anggota hanya dari proyek yang dapat kamu akses."/>
     {!query ? <div className="panel empty-state"><Search size={24}/><strong>Apa yang ingin kamu cari?</strong><p>Gunakan kolom pencarian di bagian atas, lalu tekan Enter atau tombol pencarian.</p></div> : <>
       <p className="mb-4 text-[10px] text-slate-400">{total} hasil untuk <strong className="text-slate-200">“{query}”</strong></p>
       <div className="grid gap-4">

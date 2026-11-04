@@ -16,10 +16,9 @@ export async function createProjectAction(input: unknown) {
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Data proyek tidak valid." };
   if (!isSupabaseConfigured()) return { ok: true, demo: true, message: "Proyek ditambahkan pada pratinjau lokal." };
   const context = await getWorkspaceContext();
-  if (!context.user || !context.workspaceId || context.demo) return { ok: false, message: "Sesi tidak valid." };
+  if (!context.user || !context.workspaceId || context.demo) return { ok: false, message: "Workspace pribadi tidak ditemukan. Silakan masuk kembali." };
   const supabase = await createSupabaseServerClient();
   if (!supabase) return { ok: false, message: "Koneksi database tidak tersedia." };
-  // TaskFlow is free: every workspace can create as many projects as it needs.
   const { data: project, error } = await supabase.from("projects").insert({
     workspace_id: context.workspaceId,
     created_by: context.user.id,
@@ -29,7 +28,15 @@ export async function createProjectAction(input: unknown) {
     status: "active",
   }).select("id").single();
   if (error) return { ok: false, message: error.message };
-  await supabase.from("activity_logs").insert({ workspace_id: context.workspaceId, actor_id: context.user.id, entity_type: "project", entity_id: project.id, description: `membuat proyek ${parsed.data.name}` });
-  revalidatePath("/projects"); revalidatePath("/dashboard");
-  return { ok: true, demo: false, message: "Proyek berhasil dibuat." };
+  await supabase.from("activity_logs").insert({
+    workspace_id: context.workspaceId,
+    project_id: project.id,
+    actor_id: context.user.id,
+    entity_type: "project",
+    entity_id: project.id,
+    description: `membuat proyek ${parsed.data.name}`,
+  });
+  revalidatePath("/projects");
+  revalidatePath("/dashboard");
+  return { ok: true, demo: false, projectId: project.id, message: "Proyek berhasil dibuat." };
 }
